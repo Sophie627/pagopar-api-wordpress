@@ -12,8 +12,10 @@ function theme_enqueue_styles() {
 /**
  * Your code goes below
  */
- 
- function callAPI($method, $url, $data){
+
+
+
+function callAPI($method, $url, $data){
     $curl = curl_init();
     switch ($method){
         case "POST":
@@ -44,12 +46,12 @@ function theme_enqueue_styles() {
     return $result;
 }
  
- add_action('rest_api_init', function () {
+add_action('rest_api_init', function () {
     register_rest_route( 'api/pagopar', 'iniciar_transaccion', array(
                 'methods'  => 'GET',
                 'callback' => 'iniciar_transaccion'
       ));
-  register_rest_route( 'api/flutter', 'iniciar_transaccion/(?P<user_id>\d+)/(?P<phone_number>\d+)', array(
+    register_rest_route( 'api/flutter', 'iniciar_transaccion/(?P<user_id>\d+)/(?P<phone_number>\d+)', array(
                 'methods'  => 'GET',
                 'callback' => 'iniciar_transaccion',
       			'args' => ['user_id', 'phone_number'],
@@ -57,11 +59,18 @@ function theme_enqueue_styles() {
 }); 
 
 function iniciar_transaccion($request) {
+    $public_token = '156c6e3241dc7bef012f846d63759808';
+    $private_token = 'd6ef2d40d05f2e8e225e94031f0bb550';
+    $order_id = str_replace(" ", "", substr(strval(microtime()), 2));
+    $price = '100000';
+
+    $token = sha1($private_token . $order_id . $price);
+
     $user_id = $request['user_id'];
     $billing_phone = $request['phone_number'];
-    
+
     $data = '{
-        "token": "be95cf6b1863b857311f7577956840f20f341004",
+        "token": "'. $token. '",
         "comprador": {
             "ruc": "4247903-7",
             "email": "fernandogoetz@gmail.com",
@@ -75,8 +84,8 @@ function iniciar_transaccion($request) {
             "tipo_documento": "CI",
             "direccion_referencia": null
         },
-        "public_key": "156c6e3241dc7bef012f846d63759808",
-        "monto_total": 100000,
+        "public_key": "'. $public_token . '",
+        "monto_total": '. $price. ',
         "tipo_pedido": "VENTA-COMERCIO",
         "compras_items": [
             {
@@ -84,19 +93,19 @@ function iniciar_transaccion($request) {
                 "nombre": "Ticket virtual a evento Ejemplo 2017",
                 "cantidad": 1,
                 "categoria": "909",
-                "public_key": "156c6e3241dc7bef012f846d63759808",
+                "public_key": "'. $public_token. '",
                 "url_imagen": "http://www.fernandogoetz.com/d7/wordpress/wp-content/uploads/2017/10/ticket.png",
                 "descripcion": "Ticket virtual a evento Ejemplo 2017",
                 "id_producto": 895,
-                "precio_total": 100000,
+                "precio_total": '. $price. ',
                 "vendedor_telefono": "",
                 "vendedor_direccion": "",
                 "vendedor_direccion_referencia": "",
                 "vendedor_direccion_coordenadas": ""
             }
         ],
-        "fecha_maxima_pago": "2020-11-04 14:14:48",
-        "id_pedido_comercio": "111111",
+        "fecha_maxima_pago": "2020-12-04 14:14:48",
+        "id_pedido_comercio": "'. $order_id. '",
         "descripcion_resumen": ""
     }';
 
