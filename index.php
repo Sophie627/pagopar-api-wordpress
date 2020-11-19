@@ -51,10 +51,9 @@ add_action('rest_api_init', function () {
                 'methods'  => 'GET',
                 'callback' => 'iniciar_transaccion'
       ));
-    register_rest_route( 'api/flutter', 'iniciar_transaccion/(?P<user_id>\d+)/(?P<phone_number>\d+)', array(
+    register_rest_route( 'api/flutter', 'iniciar_transaccion/(?P<buyer_email>\d+)/(?P<buyer_name>\d+)/(?P<total>\d+)/(?P<shopping_items>\d+)', array(
                 'methods'  => 'GET',
                 'callback' => 'iniciar_transaccion',
-      			'args' => ['user_id', 'phone_number'],
       ));
 }); 
 
@@ -62,25 +61,26 @@ function iniciar_transaccion($request) {
     $public_token = '156c6e3241dc7bef012f846d63759808';
     $private_token = 'd6ef2d40d05f2e8e225e94031f0bb550';
     $order_id = str_replace(" ", "", substr(strval(microtime()), 2));
-    $price = '100000';
+    $price = $request['total'];
 
     $token = sha1($private_token . $order_id . $price);
 
-    $user_id = $request['user_id'];
-    $billing_phone = $request['phone_number'];
+    $buyer_email = $request['buyer_email'];
+    $buyer_name = $request['buyer_name'];
+    $shopping_items = $request['shopping_items'];
 
     $data = '{
         "token": "'. $token. '",
         "comprador": {
-            "ruc": "4247903-7",
-            "email": "fernandogoetz@gmail.com",
+            "ruc": "",
+            "email": "'. $buyer_email. '",
             "ciudad": null,
-            "nombre": "Rudolph Goetz",
-            "telefono": "0972200046",
+            "nombre": "'. $buyer_name. '",
+            "telefono": "",
             "direccion": "",
-            "documento": "4247903",
+            "documento": "'. $order_id. '",
             "coordenadas": "",
-            "razon_social": "Rudolph Goetz",
+            "razon_social": "",
             "tipo_documento": "CI",
             "direccion_referencia": null
         },
@@ -88,23 +88,9 @@ function iniciar_transaccion($request) {
         "monto_total": '. $price. ',
         "tipo_pedido": "VENTA-COMERCIO",
         "compras_items": [
-            {
-                "ciudad": "1",
-                "nombre": "Ticket virtual a evento Ejemplo 2017",
-                "cantidad": 1,
-                "categoria": "909",
-                "public_key": "'. $public_token. '",
-                "url_imagen": "http://www.fernandogoetz.com/d7/wordpress/wp-content/uploads/2017/10/ticket.png",
-                "descripcion": "Ticket virtual a evento Ejemplo 2017",
-                "id_producto": 895,
-                "precio_total": '. $price. ',
-                "vendedor_telefono": "",
-                "vendedor_direccion": "",
-                "vendedor_direccion_referencia": "",
-                "vendedor_direccion_coordenadas": ""
-            }
+            '. $shopping_items. '
         ],
-        "fecha_maxima_pago": "2020-12-04 14:14:48",
+        "fecha_maxima_pago": "2099-12-04 14:14:48",
         "id_pedido_comercio": "'. $order_id. '",
         "descripcion_resumen": ""
     }';
